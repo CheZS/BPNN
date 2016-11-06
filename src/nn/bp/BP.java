@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 
+import nn.basic.StudyData;
+
 public class BP {
 	
 	private Builder builder;
