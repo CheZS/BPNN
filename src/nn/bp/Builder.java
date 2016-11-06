@@ -32,7 +32,7 @@ public class Builder {
 	
 	public String read(String key) {
 		Properties prop = new Properties();
-		String filePath = "config.properties";
+		String filePath = "bp.properties";
 		InputStream is = getClass().getClassLoader().getResourceAsStream(filePath);
 		String ret = null;
 		try {
