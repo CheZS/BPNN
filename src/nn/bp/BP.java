@@ -166,8 +166,8 @@ public class BP {
 		int ON = this.builder.ON;
 		int stdLen = this.StD.length;
 		for (int i = 0; i < IN; i++) {
-			dMax = Integer.MIN_VALUE;
-			dMin = Integer.MAX_VALUE;
+			dMax = Double.MIN_VALUE;
+			dMin = Double.MAX_VALUE;
 			for (int j = 0; j < stdLen; j++) {
 				double value = this.StD[j].input[i];
 				if (value > dMax) {
