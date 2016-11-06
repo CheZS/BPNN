@@ -1,5 +1,11 @@
 package nn.elm;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Random;
 
@@ -8,20 +14,20 @@ public class ELM {
 	public Builder builder;
 	
 	public StudyData[] StD;
-	public double[] P;		// µ¥¸öÑù±¾ÊäÈëÊı¾İ
-	public double[] T;		// µ¥¸öÑù±¾½ÌÊ¦Êı¾İ
+	public double[] P;		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	public double[] T;		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¦ï¿½ï¿½ï¿½ï¿½
 	
-	public double[][] W;	// ÊäÈë²ãÖÁÒş²ãÈ¨Öµ
-	public double[] b;		// Òş²ãµÄãĞÖµ
+	public double[][] W;	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¨Öµ
+	public double[] b;		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
 	
-	public double[][] belta;// Òş²ãÖÁÊä³ö²ãÈ¨Öµ
+	public double[][] belta;// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¨Öµ
 	
-	public double[] X;		// Òş²ãµÄÊäÈë
-	public double[] Y;		// Êä³ö²ãµÄÊäÈë
-	public double[] H;		// Òş²ãµÄÊä³ö
-	public double[] O;		// Êä³ö²ãµÄÊä³ö
+	public double[] X;		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	public double[] Y;		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	public double[] H;		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	public double[] O;		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	
-	public double[] errM;	// µÚm¸öÑù±¾µÄ×ÜÎó²î
+	public double[] errM;	// ï¿½ï¿½mï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	
 	public ELM(Builder builder) {
 		this.builder = builder;
@@ -48,36 +54,70 @@ public class ELM {
 		this.H = new double[HN];
 		this.O = new double[ON];
 		this.errM = new double[N];
-		/* Òş²ãÈ¨Öµ¡¢ãĞÖµ³õÊ¼»¯ */
+		/* ï¿½ï¿½ï¿½ï¿½È¨Öµï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½Ê¼ï¿½ï¿½ */
 		this.W = new double[HN][IN];
 		for (int i = 0; i < HN; i++) {
 			this.W[i] = new double[IN];
 			for (int j = 0; j < IN; j++) {
-				this.W[i][j] = random.nextDouble() - 0.5;	// ³õÊ¼»¯ÊäÈë²ãµ½Òş²ãµÄÈ¨Öµ£¬Ëæ»úÄ£Äâ-0.5µ½0.5Ö®¼äµÄÖµ
+				this.W[i][j] = random.nextDouble() - 0.5;	// ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ãµ½ï¿½ï¿½ï¿½ï¿½ï¿½È¨Öµï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½-0.5ï¿½ï¿½0.5Ö®ï¿½ï¿½ï¿½Öµ
 			}
 		}
 		this.b = new double[HN];
 		for (int i = 0; i < HN; i++) {
-			this.b[i] = random.nextDouble() - 0.5;			// Òş²ããĞÖµ³õÊ¼»¯
+			this.b[i] = random.nextDouble() - 0.5;			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½Ê¼ï¿½ï¿½
 		}
 	}
 	
 	/**
-	 * »ñÈ¡ÑµÁ·Êı¾İ
+	 * ï¿½ï¿½È¡Ñµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	 */
-	public void getTrainingData() {
-		
+	public void getTrainingData(String fileName) {
+		FileInputStream fstream = null;
+		DataInputStream in = null;
+		BufferedReader br = null;
+		try {
+			fstream = new FileInputStream("resources/" + fileName);
+			in = new DataInputStream(fstream);
+			br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			int len = this.builder.N + this.builder.M;
+			int IN = this.builder.IN;
+			int ON = this.builder.ON;
+			for (int m = 0; (strLine = br.readLine()) != null && m < len; m++) {
+				String[] records = strLine.split("	");
+				for (int i = 0; i < IN; i++) {
+					this.StD[m].input[i] = Double.parseDouble(records[i]);
+				}
+				for (int i = 0; i < ON; i++) {
+					this.StD[m].teach = Double.parseDouble(records[i + IN]);
+				}
+			}
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				br.close();
+				in.close();
+				fstream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	/**
-	 * »ñÈ¡²âÊÔÊı¾İ
+	 * ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	 */
 	public void getTestData() {
 		
 	}
 	
 	/**
-	 * ¹éÒ»»¯
+	 * ï¿½ï¿½Ò»ï¿½ï¿½
 	 * @param X
 	 */
 	public void normalization(int X) {
@@ -109,7 +149,7 @@ public class ELM {
 	}
 	
 	/**
-	 * µÚm¸öÑ§Ï°Ñù±¾ÊäÈë×Ó³ÌĞò
+	 * ï¿½ï¿½mï¿½ï¿½Ñ§Ï°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó³ï¿½ï¿½ï¿½
 	 * @param m
 	 */
 	public void input_P(int m) {
@@ -120,7 +160,7 @@ public class ELM {
 	}
 	
 	/**
-	 * µÚm¸öÑù±¾ÆÚÍûĞÅºÅ×Ó³ÌĞò
+	 * ï¿½ï¿½mï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Åºï¿½ï¿½Ó³ï¿½ï¿½ï¿½
 	 * @param m
 	 */
 	public void input_T(int m) {
@@ -131,7 +171,7 @@ public class ELM {
 	}
 	
 	/**
-	 * Òş²ã¸÷µ¥ÔªÊäÈë¡¢Êä³öÖµ×Ó³ÌĞò
+	 * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½ï¿½ë¡¢ï¿½ï¿½ï¿½Öµï¿½Ó³ï¿½ï¿½ï¿½
 	 */
 	public void H_I_O() {
 		int HN = this.builder.HN;
@@ -139,16 +179,16 @@ public class ELM {
 		for (int i = 0; i < HN; i++) {
 			double sigma = 0;
 			for (int j = 0; j < IN; j++) {
-				sigma += this.W[i][j] * this.P[j];	// ÇóÊä³ö²ãÄÚ»ı
+				sigma += this.W[i][j] * this.P[j];	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú»ï¿½
 			}
-			double x = sigma + this.b[i];			// ÇóÊä³ö²ãO[k]Êä³ö
+			double x = sigma + this.b[i];			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½O[k]ï¿½ï¿½ï¿½
 			this.X[i] = x;
 			this.H[i] = 1 / (1 + Math.exp(-x));
 		}
 	}
 	
 	/**
-	 * Êä³ö²ã¸÷µ¥ÔªÊäÈë¡¢Êä³öÖµ×Ó³ÌĞò
+	 * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½ï¿½ë¡¢ï¿½ï¿½ï¿½Öµï¿½Ó³ï¿½ï¿½ï¿½
 	 */
 	public void O_I_O() {
 		int ON = this.builder.ON;
@@ -156,36 +196,36 @@ public class ELM {
 		for (int k = 0; k < ON; k++) {
 			double sigma = 0;
 			for (int j = 0; j < HN; j++) {
-				sigma += this.belta[k][j] * this.H[j];	// ÇóÊä³ö²ãÄÚ»ı
+				sigma += this.belta[j][k] * this.H[j];	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú»ï¿½
 			}
-			this.O[k] = sigma;						// ÇóÊä³ö²ãO[k]Êä³ö
+			this.O[k] = sigma;						// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½O[k]ï¿½ï¿½ï¿½
 		}
 	}
 	
 	/**
-	 * N¸öÑù±¾µÄÈ«¾ÖÎó²î¼ÆËã   Batch Leaning ÅúÁ¿Ñ§Ï°·¨
+	 * Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½   Batch Leaning ï¿½ï¿½ï¿½ï¿½Ñ§Ï°ï¿½ï¿½
 	 * @return
 	 */
 	public double errSum() {
 		int N = this.builder.N;
 		int ON = this.builder.ON;
 		
-		double[] errM = new double[N];			// µÚm¸öÑù±¾µÄ×ÜÎó²î
-		double sqrErr = 0;						// Ã¿¸öÑù±¾µÄÆ½·½Îó²î¼ÆËã¶¼ÊÇ´Ó0¿ªÊ¼
+		double[] errM = new double[N];			// ï¿½ï¿½mï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		double sqrErr = 0;						// Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ã¶¼ï¿½Ç´ï¿½0ï¿½ï¿½Ê¼
 		double totalErr = 0;
 		for (int m = 0; m < N; m++) {
 			for (int k = 0; k < ON; k++) {
 				errM[k] = this.T[k] - this.O[k];
-				sqrErr += errM[k] * errM[k];	// ÇóµÚm¸öÑù±¾ÏÂÊä³ö²ãµÄÆ½·½Îó²î
+				sqrErr += errM[k] * errM[k];	// ï¿½ï¿½ï¿½mï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ½ï¿½ï¿½ï¿½ï¿½ï¿½
 			}
-			errM[m] = sqrErr / 2;				// µÚm¸öÑù±¾ÏÂÊä³ö²ãµÄÆ½·½Îó²î
+			errM[m] = sqrErr / 2;				// ï¿½ï¿½mï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ½ï¿½ï¿½ï¿½ï¿½ï¿½
 			totalErr += errM[m];
 		}
 		return totalErr;
 	}
 	
 	/**
-	 * ±£´æÈ¨Öµ×îºóµ÷Õû½á¹û
+	 * ï¿½ï¿½ï¿½ï¿½È¨Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	 */
 	public void save() {
 		// TODO
