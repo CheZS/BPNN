@@ -1,4 +1,4 @@
-package nn.basic;
+package nn.bp;
 
 /**
  * 学习样本数据结构
